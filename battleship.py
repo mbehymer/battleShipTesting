@@ -1,12 +1,16 @@
 class BattleShip:
-    def __init__(self):
+    def __init__(self, canDisplayColor):
+        self.c = self.Colors()
+        self.canDisplayColor = canDisplayColor
+        
         self.board = [[0 for y in range(8)] for x in range(8)]
         self.ships = self._get_ship_locations()
-        self.hitPoints = 5 + 4 + 3 + 3 + 2
+        # self.hitPoints = 5 + 4 + 3 + 3 + 2
+        self.hitPoints = 1
 
         self.enemyBoard = [[0 for y in range(8)] for x in range(8)]
-        self.enemyHitPoints = 5 + 4 + 3 + 3 + 2
-
+        # self.enemyHitPoints = 5 + 4 + 3 + 3 + 2
+        self.enemyHitPoints = 1
 
     class Colors:
         def __init__(self):            
@@ -31,7 +35,6 @@ class BattleShip:
         # Ask if they want to place the ship horizontally or vertically
         shipInfo = [["Carrier", 5], ["Battleship", 4], ["Destroyer", 3], ["Submarine", 3], ["Patrol_Boat", 2]]
         ships = {}
-        sidePos = ["a","b","c","d","e","f","g","h"]
         validPlacement = False
 
         for ship in shipInfo:
@@ -39,7 +42,11 @@ class BattleShip:
             shipSize = ship[1]
 
             # Display the board
-            self.show_your_colored_board()
+            if self.canDisplayColor:
+                self._show_your_colored_board()
+            else:
+                self._show_your_board()
+
 
             while not validPlacement:
                 shipLayout = input(f"Do you want to place your {shipName} of size {shipSize} horizontally or vertically? (h/v) ")
@@ -134,7 +141,70 @@ class BattleShip:
         return False
 
         
-    def show_your_colored_board(self):
+    def _show_your_colored_board(self):
+        newBoard = list(row[:] for row in self.board)
+        sidePos = ["a","b","c","d","e","f","g","h"]
+        
+        # Show the horizontal numbers for the boards coordinates
+        for num in range(len(self.board)):
+            if num == 0:
+                print(f"   {num}", end="")
+            else:
+                print(f"  {num}", end="")
+        print()
+
+        for y in range(len(newBoard)):
+            for x in range(len(newBoard[y])):
+                if newBoard[y][x] == 0:
+                    newBoard[y][x] = self.c.BLUEHIGHLIGHT + self.c.BLACK + " 0 " + self.c.ENDC
+                elif newBoard[y][x] == 1:
+                    newBoard[y][x] = self.c.GREENHIGHLIGHT + self.c.BLACK + " 1 " + self.c.ENDC
+                elif newBoard[y][x] == 2:
+                    newBoard[y][x] = self.c.REDHIGHLIGHT + self.c.BLACK + " X " + self.c.ENDC
+                elif newBoard[y][x] == 3:
+                    newBoard[y][x] = self.c.CYANHIGHLIGHT + self.c.BLACK + " - " + self.c.ENDC
+
+        for i in range(len(newBoard)):
+            row = newBoard[i]
+            line = sidePos[i] + " "
+            for index in range(len(row)):
+                line += f"{row[index]}"
+
+            print(line)        
+    
+        
+    def _show_enemy_colored_board(self):
+        newBoard = list(row[:] for row in self.enemyBoard)
+        sidePos = ["a","b","c","d","e","f","g","h"]
+        
+        # Show the horizontal numbers for the boards coordinates
+        for num in range(len(self.board)):
+            if num == 0:
+                print(f"   {num}", end="")
+            else:
+                print(f"  {num}", end="")
+        print()
+
+        for y in range(len(newBoard)):
+            for x in range(len(newBoard[y])):
+                if newBoard[y][x] == 0:
+                    newBoard[y][x] = self.c.CYANHIGHLIGHT + self.c.BLACK + " 0 " + self.c.ENDC
+                elif newBoard[y][x] == 1:
+                    newBoard[y][x] = self.c.CYANHIGHLIGHT + self.c.BLACK + " 0 " + self.c.ENDC
+                elif newBoard[y][x] == 2:
+                    newBoard[y][x] = self.c.REDHIGHLIGHT + self.c.BLACK + " X " + self.c.ENDC
+                elif newBoard[y][x] == 3:
+                    newBoard[y][x] = self.c.BLUEHIGHLIGHT + self.c.BLACK + " - " + self.c.ENDC
+
+        for i in range(len(newBoard)):
+            row = newBoard[i]
+            line = sidePos[i] + " "
+            for index in range(len(row)):
+                line += f"{row[index]}"
+
+            print(line)        
+
+    def _show_your_board(self):
         newBoard = list(row[:] for row in self.board)
         sidePos = ["a","b","c","d","e","f","g","h"]
         
@@ -146,18 +216,16 @@ class BattleShip:
                 print(f"  {num}", end="")
         print()
         
-        c = self.Colors()
-
         for y in range(len(newBoard)):
             for x in range(len(newBoard[y])):
                 if newBoard[y][x] == 0:
-                    newBoard[y][x] = c.BLUEHIGHLIGHT + c.BLACK + " 0 " + c.ENDC
+                    newBoard[y][x] = " 0 "
                 elif newBoard[y][x] == 1:
-                    newBoard[y][x] = c.GREENHIGHLIGHT + c.BLACK + " 1 " + c.ENDC
+                    newBoard[y][x] = " 1 "
                 elif newBoard[y][x] == 2:
-                    newBoard[y][x] = c.REDHIGHLIGHT + c.BLACK + " X " + c.ENDC
+                    newBoard[y][x] = " X "
                 elif newBoard[y][x] == 3:
-                    newBoard[y][x] = c.CYANHIGHLIGHT + c.BLACK + " - " + c.ENDC
+                    newBoard[y][x] = " - "
 
         for i in range(len(newBoard)):
             row = newBoard[i]
@@ -165,10 +233,9 @@ class BattleShip:
             for index in range(len(row)):
                 line += f"{row[index]}"
 
-            print(line)        
+            print(line) 
             
-        
-    def show_enemy_colored_board(self):
+    def _show_enemy_board(self):
         newBoard = list(row[:] for row in self.enemyBoard)
         sidePos = ["a","b","c","d","e","f","g","h"]
         
@@ -180,18 +247,16 @@ class BattleShip:
                 print(f"  {num}", end="")
         print()
         
-        c = self.Colors()
-
         for y in range(len(newBoard)):
             for x in range(len(newBoard[y])):
                 if newBoard[y][x] == 0:
-                    newBoard[y][x] = c.CYANHIGHLIGHT + c.BLACK + " 0 " + c.ENDC
+                    newBoard[y][x] = " 0 "
                 elif newBoard[y][x] == 1:
-                    newBoard[y][x] = c.CYANHIGHLIGHT + c.BLACK + " 0 " + c.ENDC
+                    newBoard[y][x] = " 0 "
                 elif newBoard[y][x] == 2:
-                    newBoard[y][x] = c.REDHIGHLIGHT + c.BLACK + " X " + c.ENDC
+                    newBoard[y][x] = " X "
                 elif newBoard[y][x] == 3:
-                    newBoard[y][x] = c.BLUEHIGHLIGHT + c.BLACK + " - " + c.ENDC
+                    newBoard[y][x] = " - "
 
         for i in range(len(newBoard)):
             row = newBoard[i]
@@ -199,7 +264,25 @@ class BattleShip:
             for index in range(len(row)):
                 line += f"{row[index]}"
 
-            print(line)        
+            print(line) 
+
+    def display_board(self):
+        # Display your board
+        print(f"YOUR BOARD:\n")
+        self._show_your_board()
+
+        # Display your view of enemies board
+        print(f"\nENEMY BOARD:\n")
+        self._show_enemy_board()
+
+    def display_board_colored(self):
+        # Display your board
+        print(f"{self.c.OKBLUE}YOUR BOARD:{self.c.ENDC}\n")
+        self._show_your_colored_board()
+
+        # Display your view of enemies board
+        print(f"\n{self.c.FAIL}ENEMY BOARD:{self.c.ENDC}\n")
+        self._show_enemy_colored_board()
 
 
     def load_enemy_pos(self, enemyShipsPosStr):
@@ -260,3 +343,12 @@ class BattleShip:
 
     def has_won(self):
         return self.enemyHitPoints <= 0
+
+    def reset(self):
+        self.board = [[0 for y in range(8)] for x in range(8)]
+        self.ships = self._get_ship_locations()
+        self.hitPoints = 5 + 4 + 3 + 3 + 2
+
+        self.enemyBoard = [[0 for y in range(8)] for x in range(8)]
+        self.enemyHitPoints = 5 + 4 + 3 + 3 + 2
+

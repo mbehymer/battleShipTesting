@@ -7,8 +7,9 @@ def bit_str_parser(bit_str):
 import socket
 from battleship import BattleShip
 
+canDisplayColor = input("Are you using an IDE that can display color in the terminal? (y/n)") == "y"
 
-myBattleship = BattleShip()
+myBattleship = BattleShip(canDisplayColor)
 colors = myBattleship.Colors()
 
 hostname = socket.gethostname()
@@ -34,7 +35,6 @@ if friend_ip == "":
             
             data = conn.recv(1024)
             myBattleship.load_enemy_pos(data.decode())
-            # print(data)
 
             conn.sendall(str.encode(myBattleship.send_ships_pos()))
             print("Boards have been passed, ready to play.\n")
@@ -44,45 +44,51 @@ if friend_ip == "":
             recieved = ""
             while response != "quit" or recieved != "quit":
                 if can_move:
+                    validPlacement = False
                     
                     # Display your board
-                    print(f"{colors.OKBLUE}YOUR BOARD:{colors.ENDC}\n")
-                    myBattleship.show_your_colored_board()
-
-                    # Display your view of enemies board
-                    print(f"\n{colors.FAIL}ENEMY BOARD:{colors.ENDC}\n")
-                    myBattleship.show_enemy_colored_board()
-                    response = input("\nWhere do you want to fire? (eg., a5) ")
-
-
-                    myBattleship.fire_on_enemy(response)
+                    if canDisplayColor:
+                        myBattleship.display_board_colored()
+                    else:
+                        myBattleship.display_board()
 
                     
+                    while not validPlacement:
+                        try:
+                            # If this is a valid placement continue, if not then have them enter again
+                            response = input("\nWhere do you want to fire? (eg., a5) ")
+                            myBattleship.fire_on_enemy(response)
+                            validPlacement = True
+                        except Exception:
+                            print("\nNot a valid place, pick another spot. ")
+                    
                     # Display your board
-                    print(f"{colors.OKBLUE}YOUR BOARD:{colors.ENDC}\n")
-                    myBattleship.show_your_colored_board()
-
-                    # Display your view of enemies board
-                    print(f"\n{colors.FAIL}ENEMY BOARD:{colors.ENDC}\n")
-                    myBattleship.show_enemy_colored_board()
-
-                    if myBattleship.has_won():
-                        print("You Won!\n")
-                        response = "quit"
+                    if canDisplayColor:
+                        myBattleship.display_board_colored()
+                    else:
+                        myBattleship.display_board()
                     
                     can_move = False
-                    # print(addr)
+                    
                     if len(str.encode(response)) > 1024:
                         conn.sendall(str.encode(response)[:1024])
                     else:
                         conn.sendall(str.encode(response))
+                        
+                    if myBattleship.has_won():
+                        print("You Won!\n")
+                        response = input("Would you like to play again? If not type 'quit'")
+                        if response != "quit":
+                            myBattleship.reset()
+                        can_move = True
+
+                        if len(str.encode(response)) > 1024:
+                            conn.sendall(str.encode(response)[:1024])
+                        else:
+                            conn.sendall(str.encode(response))
                     
                     # s.sendto(str.encode(response), (addr[0], PORT))
                 else:
-                    # msgTuple = s.recvfrom(1024)
-                    # print(msgTuple)
-                    # recieved, addr = msgTuple
-                    # print("Addr", addr)
                     print("Waiting for other player's response...\n")
                     recieved = conn.recv(1024).decode()
 
@@ -91,6 +97,14 @@ if friend_ip == "":
                     print("> " + recieved)
                     can_move = True
                 
+                    if myBattleship.has_lost():
+                        print("You Lost!\n")
+                        print("Waiting for players response...")
+                        
+                        recieved = conn.recv(1024).decode()
+                        if recieved != "quit":
+                            myBattleship.reset()
+                        can_move = False
 
 else:
     # The peer connecting to the host peer goes first
@@ -114,49 +128,64 @@ else:
         while response != "quit" or recieved != "quit":
             if can_move:
                 
-                # Display your board
-                print(f"{colors.OKBLUE}YOUR BOARD:{colors.ENDC}\n")
-                myBattleship.show_your_colored_board()
-
-                # Display your view of enemies board
-                print(f"\n{colors.FAIL}ENEMY BOARD:{colors.ENDC}\n")
-                myBattleship.show_enemy_colored_board()
-                response = input("\nWhere do you want to fire? (eg., a5) ")
-
-
-                myBattleship.fire_on_enemy(response)
-
+                validPlacement = False
                 
                 # Display your board
-                print(f"{colors.OKBLUE}YOUR BOARD:{colors.ENDC}\n")
-                myBattleship.show_your_colored_board()
+                if canDisplayColor:
+                    myBattleship.display_board_colored()
+                else:
+                    myBattleship.display_board()
 
-                # Display your view of enemies board
-                print(f"\n{colors.FAIL}ENEMY BOARD:{colors.ENDC}\n")
-                myBattleship.show_enemy_colored_board()
+                
+                while not validPlacement:
+                    try:
+                        # If this is a valid placement continue, if not then have them enter again
+                        response = input("\nWhere do you want to fire? (eg., a5) ")
+                        myBattleship.fire_on_enemy(response)
+                        validPlacement = True
+                    except Exception:
+                        print("\nNot a valid place, pick another spot. ")
+                
+                # Display your board
+                if canDisplayColor:
+                    myBattleship.display_board_colored()
+                else:
+                    myBattleship.display_board()
 
-                if myBattleship.has_won():
-                    print("You Won!\n")
-                    response = "quit"
-
-                # response = input("< ")
                 can_move = False
-                # print(address)
+
                 if len(str.encode(response)) > 1024:
                     s.sendall(str.encode(response)[:1024])
                 else:
                     s.sendall(str.encode(response))
-                # s.sendto(str.encode(response), address)
+
+                if myBattleship.has_won():
+                    print("You Won!\n")
+                    response = input("Would you like to play again? If not type 'quit'")
+                    if response != "quit":
+                        myBattleship.reset()
+                    can_move = True
+
+                    if len(str.encode(response)) > 1024:
+                        s.sendall(str.encode(response)[:1024])
+                    else:
+                        s.sendall(str.encode(response))
+                    
             else:
-                # msgTuple = s.recvfrom(1024)
-                # print(msgTuple)
-                # recieved, address = msgTuple
-                # print("Addr", address)
-                # recieved = bit_str_parser(recieved)
                 print("Waiting for other player's response...\n")
                 recieved = s.recv(1024).decode()
                 myBattleship.recieve_fire(recieved)
 
+                can_move = True
+
+                if myBattleship.has_lost():
+                    print("You Lost!\n")
+                    print("Waiting for players response...")
+
+                    recieved = s.recv(1024).decode()
+                    if recieved != "quit":
+                        myBattleship.reset()
+                    can_move = False
+
                 print("> " + recieved)
                 
-                can_move = True
