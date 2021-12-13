@@ -80,6 +80,13 @@ if friend_ip == "":
                         response = input("Would you like to play again? If not type 'quit'")
                         if response != "quit":
                             myBattleship.reset()
+                            
+                            # Send and receive Each other's information
+                            data = conn.recv(1024)
+                            myBattleship.load_enemy_pos(data.decode())
+
+                            conn.sendall(str.encode(myBattleship.send_ships_pos()))
+                            print("Boards have been passed, ready to play.\n")
                         can_move = True
 
                         if len(str.encode(response)) > 1024:
@@ -104,6 +111,13 @@ if friend_ip == "":
                         recieved = conn.recv(1024).decode()
                         if recieved != "quit":
                             myBattleship.reset()
+                            
+                            # Send and receive Each other's information
+                            data = conn.recv(1024)
+                            myBattleship.load_enemy_pos(data.decode())
+
+                            conn.sendall(str.encode(myBattleship.send_ships_pos()))
+                            print("Boards have been passed, ready to play.\n")
                         can_move = False
 
 else:
@@ -162,14 +176,26 @@ else:
                 if myBattleship.has_won():
                     print("You Won!\n")
                     response = input("Would you like to play again? If not type 'quit'")
-                    if response != "quit":
-                        myBattleship.reset()
-                    can_move = True
 
                     if len(str.encode(response)) > 1024:
                         s.sendall(str.encode(response)[:1024])
                     else:
                         s.sendall(str.encode(response))
+
+                    if response != "quit":
+                        myBattleship.reset()
+                        print("LET's PLAY BATTLESHIP\n")
+
+                        # Send and receive Each other's information
+                        msg = str.encode(myBattleship.send_ships_pos())
+                        s.sendall(msg)
+                        
+                        data = s.recv(1024).decode()
+                        myBattleship.load_enemy_pos(data)
+
+                        print("Boards have been passed.")
+
+                    can_move = True
                     
             else:
                 print("Waiting for other player's response...\n")
@@ -182,9 +208,19 @@ else:
                     print("You Lost!\n")
                     print("Waiting for players response...")
 
+                    # Send and receive Each other's information
                     recieved = s.recv(1024).decode()
                     if recieved != "quit":
                         myBattleship.reset()
+
+                        msg = str.encode(myBattleship.send_ships_pos())
+                        s.sendall(msg)
+                        
+                        data = s.recv(1024).decode()
+                        myBattleship.load_enemy_pos(data)
+
+                        print("Boards have been passed.")
+                        
                     can_move = False
 
                 print("> " + recieved)

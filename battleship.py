@@ -5,12 +5,10 @@ class BattleShip:
         
         self.board = [[0 for y in range(8)] for x in range(8)]
         self.ships = self._get_ship_locations()
-        # self.hitPoints = 5 + 4 + 3 + 3 + 2
-        self.hitPoints = 1
+        self.hitPoints = 5 + 4 + 3 + 3 + 2
 
         self.enemyBoard = [[0 for y in range(8)] for x in range(8)]
-        # self.enemyHitPoints = 5 + 4 + 3 + 3 + 2
-        self.enemyHitPoints = 1
+        self.enemyHitPoints = 5 + 4 + 3 + 3 + 2
 
     class Colors:
         def __init__(self):            
